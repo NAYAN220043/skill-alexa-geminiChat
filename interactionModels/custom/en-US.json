@@ -22,7 +22,7 @@
           "slots": [
             {
               "name": "query",
-              "type": "AMAZON.Person"
+              "type": "AMAZON.SearchQuery"
             }
           ],
           "name": "ChatIntent",
@@ -32,7 +32,7 @@
         }
       ],
       "types": [],
-      "invocationName": "assistente inteligente"
+      "invocationName": "Gemini assistant"
     }
   }
 }
