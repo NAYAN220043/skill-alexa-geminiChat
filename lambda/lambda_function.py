@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# This sample demonstrates handling intents from an Alexa skill using the Alexa Skills Kit SDK for Python.
-# Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
-# session persistence, api calls, and more.
-# This sample is built using the handler classes approach in skill builder.
 import logging
 import ask_sdk_core.utils as ask_utils
 import requests
@@ -21,18 +17,19 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-# URL do endpoint da API
+# API Endpoint URL
 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={}".format(GOOGLE_API_KEY)
-# Cabeçalhos para a requisição
+
+# Headers for the request
 headers = {
     'Content-Type': 'application/json',
 }
-# Dados (payload) para serem enviados na requisição POST
+
+# Data (payload) for the POST request
 data = {
     "contents": [{
-        "role":"user",
+        "role": "user",
         "parts": [{
             "text": ""
         }]
@@ -42,21 +39,18 @@ data = {
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
     def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
-
         return ask_utils.is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        data["contents"][0]["parts"][0]["text"] = "Você será minha assistente de I.A. Te daria comandos e iremos interagir conforme lhe orientar e treinar."
+        data["contents"][0]["parts"][0]["text"] = "You will be my AI assistant. I will give you commands, and we will interact as I guide and train you."
         response = requests.post(url, json=data, headers=headers)
         if response.status_code == 200:
             response_data = response.json()
             text = (response_data.get("candidates", [{}])[0]
                 .get("content", {})
                 .get("parts", [{}])[0]
-                .get("text", "Texto não encontrado"))
-            speak_output = text + " Como posso te ajudar?"
+                .get("text", "Text not found"))
+            speak_output = text + " How can I help you?"
             response_text = {
                 "role": "model",
                 "parts": [{
@@ -65,8 +59,8 @@ class LaunchRequestHandler(AbstractRequestHandler):
             }
             data["contents"].append(response_text)
         else:
-            speak_output = "Erro na requsição"
-            
+            speak_output = "Error in the request."
+
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -78,18 +72,16 @@ class LaunchRequestHandler(AbstractRequestHandler):
 class ChatIntentHandler(AbstractRequestHandler):
     """Handler for Chat Intent."""
     def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
         return ask_utils.is_intent_name("ChatIntent")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
         query = handler_input.request_envelope.request.intent.slots["query"].value
         query_text = {
-                "role": "user",
-                "parts": [{
-                    "text": query
-                }]
-            }
+            "role": "user",
+            "parts": [{
+                "text": query
+            }]
+        }
         data["contents"].append(query_text)
         response = requests.post(url, json=data, headers=headers)
         if response.status_code == 200:
@@ -97,7 +89,7 @@ class ChatIntentHandler(AbstractRequestHandler):
             text = (response_data.get("candidates", [{}])[0]
                 .get("content", {})
                 .get("parts", [{}])[0]
-                .get("text", "Texto não encontrado"))
+                .get("text", "Text not found"))
             speak_output = text
             response_text = {
                 "role": "model",
@@ -107,12 +99,12 @@ class ChatIntentHandler(AbstractRequestHandler):
             }
             data["contents"].append(response_text)
         else:
-            speak_output = "Não obtive uma resposta para sua solicitação"
+            speak_output = "I couldn't get a response for your request."
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask("Alguma outra pergunta?")
+                .ask("Do you have any other questions?")
                 .response
         )
 
@@ -120,12 +112,10 @@ class ChatIntentHandler(AbstractRequestHandler):
 class CancelOrStopIntentHandler(AbstractRequestHandler):
     """Single handler for Cancel and Stop Intent."""
     def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
         return (ask_utils.is_intent_name("AMAZON.CancelIntent")(handler_input) or
                 ask_utils.is_intent_name("AMAZON.StopIntent")(handler_input))
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
         speak_output = "Goodbye!"
 
         return (
@@ -136,16 +126,11 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
 
 
 class CatchAllExceptionHandler(AbstractExceptionHandler):
-    """Generic error handling to capture any syntax or routing errors. If you receive an error
-    stating the request handler chain is not found, you have not implemented a handler for
-    the intent being invoked or included it in the skill builder below.
-    """
+    """Generic error handling to capture any syntax or routing errors."""
     def can_handle(self, handler_input, exception):
-        # type: (HandlerInput, Exception) -> bool
         return True
 
     def handle(self, handler_input, exception):
-        # type: (HandlerInput, Exception) -> Response
         logger.error(exception, exc_info=True)
 
         speak_output = "Sorry, I had trouble doing what you asked. Please try again."
@@ -157,11 +142,7 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
                 .response
         )
 
-# The SkillBuilder object acts as the entry point for your skill, routing all request and response
-# payloads to the handlers above. Make sure any new handlers or interceptors you've
-# defined are included below. The order matters - they're processed top to bottom.
-
-
+# The SkillBuilder object acts as the entry point for your skill
 sb = SkillBuilder()
 
 sb.add_request_handler(LaunchRequestHandler())
