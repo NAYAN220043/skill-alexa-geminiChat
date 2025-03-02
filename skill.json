@@ -32,7 +32,7 @@
       "isAvailableWorldwide": true,
       "locales": {
         "en-US": {
-          "name": "geminiChat"
+          "name": "Gemini assistant"
         }
       },
       "testingInstructions": "Sample Testing Instructions."
